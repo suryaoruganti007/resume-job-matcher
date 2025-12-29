@@ -1,18 +1,23 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
+FROM python:3.10-slim
 
 WORKDIR /app
 
-# Copy requirements first for caching
-COPY backend/requirements.txt .
+# Install system dependencies FIRST (including gcc for blis/spaCy)
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps (this image has gcc + all build tools)
+# Copy and install Python dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install spaCy model
-RUN python -m spacy download en_core_web_sm
+# Install spaCy model via pip wheel (more reliable than spacy download)
+RUN pip install --no-cache-dir \
+    https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
 
-# Copy app code
-COPY backend/app ./app
+# Copy application code
+COPY . .
 
-EXPOSE $PORT
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$PORT"]
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
