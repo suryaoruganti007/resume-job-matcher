@@ -1,14 +1,17 @@
-# frontend/Dockerfile
 FROM node:20-alpine AS build
 
 WORKDIR /app
-COPY package*.json ./
+
+# Copy only frontend files
+COPY frontend/package*.json ./
 RUN npm install
 
-COPY . .
+COPY frontend/ ./
 RUN npm run build
 
 FROM nginx:alpine
+
 COPY --from=build /app/build /usr/share/nginx/html
-EXPOSE 80
+
+EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]
