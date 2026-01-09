@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: resume-job-matcher-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: "8000"   # Render will override with its own PORT, but this keeps your app consistent
+
+  - type: web
+    name: resume-job-matcher-frontend
+    env: docker
+    dockerfilePath: ./frontend/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: BACKEND_URL
+        value: "https://resume-job-matcher-backend.onrender.com"
